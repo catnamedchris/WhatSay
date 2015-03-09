@@ -1,0 +1,9 @@
+extends layout
+
+block content
+  div#main
+      h1= 'SayWhat'
+      textarea#question(placeholder='Don\'t know how to respond to a text? Give me some background, and I\'ll give you a suggestion.', rows='5')
+      button#btn-submit= 'Submit'
+      h2= 'Here\s what you should say:'
+      p#answer

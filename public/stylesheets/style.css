@@ -1,0 +1,33 @@
+* {
+    margin: 0;
+    padding: 0;
+}
+
+#main {
+    padding: 2em;
+}
+
+    #question {
+        width: 100%;
+    }
+
+    #btn-submit {
+        width: 100%;
+    }
+
+    /*#answer-overlay {*/
+        /*background-color: rgba(0, 0, 0, 0.5);*/
+        /*display: none;*/
+        /*height: 100%;*/
+        /*left: 0;*/
+        /*position: absolute;*/
+        /*text-align: center;*/
+        /*top: 0;*/
+        /*width: 100%;*/
+    /*}*/
+
+    #answer {
+        display: none;
+        /*height: 100%;*/
+        width: 100%;
+    }
