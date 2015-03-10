@@ -2,8 +2,12 @@ extends layout
 
 block content
   div#main
-      h1= 'WhatSay'
-      textarea#question(placeholder='Don\'t know how to respond to a text? Give me some background, and I\'ll give you a suggestion.', rows='5')
-      button#btn-submit= 'Submit'
-      h2= 'Here\s what you should say:'
-      p#answer
+    #question-area
+      h3= 'WhatSay'
+      textarea#question.form-control(placeholder='Don\'t know how to respond to a text? Give me some background, and I\'ll give you a suggestion.', rows='7')
+      button#btn-submit.btn.btn-default= 'Submit'
+    #answer-area
+      div#wait-marker
+      div#answer-container
+          h3= 'Here\'s what you should say:'
+          p#answer
