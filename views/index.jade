@@ -3,11 +3,18 @@ extends layout
 block content
   div#main
     #question-area
-      h3= 'WhatSay'
-      textarea#question.form-control(placeholder='Don\'t know how to respond to a text? Give me some background, and I\'ll give you a suggestion.', rows='7')
+      textarea#question.form-control(
+        placeholder='Don\'t know how to respond to a text? Give me some background, and I\'ll give you a suggestion.',
+        rows='8')
       button#btn-submit.btn.btn-default= 'Submit'
+
     #answer-area
       div#wait-marker
       div#answer-container
           h3= 'Here\'s what you should say:'
           p#answer
+
+  script(src='https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.3/jquery.min.js')
+  script(src='https://cdn.socket.io/socket.io-1.2.0.js')
+  script(src='https://cdnjs.cloudflare.com/ajax/libs/spin.js/2.0.1/spin.min.js')
+  script(src='/javascripts/main.js')

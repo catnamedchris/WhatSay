@@ -2,10 +2,13 @@ $(function() {
   var $textarea = $('#question');
   var $submitBtn = $('#btn-submit');
   var $waitMarker = $('#wait-marker');
+  var $answerArea = $('#answer-area');
   var $answerContainer = $('#answer-container');
   var $answer = $('#answer');
 
   var socket = io();
+
+  screen.orientation.lock('portrait');
 
   socket.on('answer', function(answer) {
     $answer.text(answer);

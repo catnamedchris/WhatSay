@@ -1,29 +1,86 @@
-window.onload = function() {
-  var $questions = $('#questions');
-
+$(function() {
   var socket = io();
-  var socketId = null;
+  var adminSocketId = null;
+  var logs = {};
+  var currentSocketId = null;
+
+  var $socketIdMenu = $('#users');
+  var $textarea = $('#admin-answer');
+  var $answerBtn = $('#log button');
+
+  function renderLog(socketId) {
+    var $chat = $('#chat');
+    $chat.html('');
+
+    $('li[data-id="' + socketId + '"]')
+      .addClass('active')
+      .siblings()
+      .removeClass('active');
+
+    logs[socketId].forEach(function(entry) {
+      var $chatEntryTemplate = $('#chat-entry');
+      var $chatEntry =
+        $($chatEntryTemplate
+          .html()
+          .replace('`userType`', entry.type))
+        .html(entry.text);
+
+      $chat.append($chatEntry);
+    });
+  }
 
   socket.on('socketId', function(id) {
-    socketId = id;
+    adminSocketId = id;
 
-    socket.emit('adminConnected', socketId);
+    socket.emit('adminConnected', adminSocketId);
   });
 
   socket.on('question', function(questionData) {
-    var $li = $('<li></li>');
-    var $p = $('<p>' + questionData.question + '</p>');
-    var $textarea = $('<textarea></textarea>');
-    var $button = $('<button>Answer question</button>');
+    currentSocketId = questionData.socketId;
 
-    $li.append($p);
-    $li.append($textarea);
-    $li.append($button);
-    $questions.append($li);
+    var $userMenuItemTemplate = $('#user-menu-item');
+    var $userMenuItem;
 
-    $button.on('click', function(event) {
-      console.log($textarea.val());
-      socket.emit('adminAnswer', questionData.socketId, $textarea.val());
-    });
+    if (currentSocketId in logs) {
+      $('li[data-id="' + currentSocketId + '"]')
+        .addClass('has-new-data')
+        .addClass('active')
+        .siblings()
+        .removeClass('active');
+
+      logs[currentSocketId].push({ text: questionData.question, type: 'user' });
+    } else {
+      $userMenuItem =
+        $($userMenuItemTemplate
+          .html()
+          .replace(/`socketId`/g, currentSocketId));
+
+      $('#users').append($userMenuItem);
+
+      $userMenuItem
+        .addClass('has-new-data')
+        .addClass('active')
+        .siblings()
+        .removeClass('active');
+
+      logs[currentSocketId] = [{ text: questionData.question, type: 'user' }];
+    }
+
+    renderLog(currentSocketId);
   });
-};
+
+  $socketIdMenu.on('click', 'li', function(event) {
+    currentSocketId = $(event.currentTarget).attr('data-id');
+    renderLog(currentSocketId);
+  });
+
+  $answerBtn.on('click', function(event) {
+    if (currentSocketId) {
+      logs[currentSocketId].push({ text: $textarea.val(), type: 'admin' });
+      $('li[data-id="' + currentSocketId + '"').removeClass('has-new-data');
+      renderLog(currentSocketId);
+      socket.emit('adminAnswer', currentSocketId, $textarea.val());
+      $textarea.val('');
+    }
+  })
+});

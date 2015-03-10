@@ -2,38 +2,135 @@ html, body, #main {
     height: 100%;
 }
 
+ul {
+    margin: 0;
+}
+
+#main {
+    background-color: #000;
+}
+
 #question-area,
 #answer-area {
     height: 50%;
-    padding: 2em;
+    padding: 1em 2em;
+}
+
+#question-area {
+    background-color: #fff;
+    padding-top: 2em;
 }
 
 #answer-area {
-    background-color: #000;
+    color: #fff;
+    padding-bottom: 2em;
+}
+
+#question-area h3,
+#answer-area h3 {
+    margin-top: 0;
+}
+
+#question,
+#btn-submit,
+#wait-marker,
+#answer {
+    width: 100%;
+}
+
+#btn-submit {
+    margin-top: 1em;
+}
+
+#wait-marker {
+    display: none;
+    height: 100%;
+    position: relative;
+}
+
+#answer-container {
+    display: none;
+    margin-top: 2em;
+}
+
+#admin {
+    height: 100%;
+    width: 100%;
+}
+
+#users {
+    border-right: 1px solid black;
+    display: inline-block;
+    height: 100%;
+    list-style: none;
+    overflow-x: scroll;
+    padding: 0;
+    text-align: center;
+    width: 20%;
+}
+
+#users li {
+    border-bottom: 1px solid black;
+    cursor: pointer;
+    overflow-x: scroll;
+    padding: 1em 0;
+    width: 100%;
+}
+
+#users li.active {
+    background-color: rgba(0, 0, 0, 0.5);
     color: #fff;
 }
 
-    #question {
-        width: 100%;
+.has-new-data {
+    font-weight: bold;
+}
+
+#log {
+    display: inline-block;
+    height: 100%;
+    padding: 1em;
+    position: relative;
+    overflow: scroll;
+    width: 80%;
+}
+
+#chat {
+    border: 1px solid black;
+    height: 75%;
+    list-style: none;
+    overflow-y: scroll;
+    padding: 1em;
+    width: 100%;
+}
+
+#chat .user {
+    text-align: left;
+}
+
+#chat .admin {
+    background-color: rgba(255, 0, 0, 0.1);
+    text-align: right;
+}
+
+#admin-answer {
+    margin-top: 1.5em;
+    height: 15%;
+    width: 100%;
+}
+
+#log button {
+    margin-top: 1em;
+    width: 100%;
+}
+
+
+@media (max-height: 250px) {
+    #question-area {
+        height: 100%;
     }
 
-    #btn-submit {
-        margin-top: 1em;
-        width: 100%;
-    }
-
-    #wait-marker {
+    #answer-area {
         display: none;
-        min-height: 200px;
-        min-width: 100%;
-        position: relative;
     }
-
-    #answer-container {
-        display: none;
-        margin-top: 2em;
-    }
-
-        #answer {
-            width: 100%;
-        }
+}
