@@ -5,12 +5,20 @@ $(function() {
   var $answerArea = $('#answer-area');
   var $answerContainer = $('#answer-container');
   var $answer = $('#answer');
+  var $historyBtn = $('#btn-logs');
+  var $logs = $('#logs');
+  var $logCloseBtn = $('#logs .btn');
 
   var socket = io();
   var socketId;
   var logs = [];
 
   screen.orientation.lock('portrait');
+
+  var storedLogs = localStorage.getItem('WhatSayLogs');
+  if (storedLogs) {
+    logs = JSON.parse(storedLogs);
+  }
 
   socket.on('socketId', function(id) {
     socketId = id;
@@ -53,5 +61,27 @@ $(function() {
     $answerContainer.fadeTo('slow', 0).hide();
     $waitMarker.append(spinner.el);
     $waitMarker.show().fadeTo('slow', 1);
+  });
+
+  $historyBtn.on('click', function(event) {
+    var $chat = $('#chat');
+    $chat.html('');
+
+    logs.forEach(function(entry) {
+      var $chatEntryTemplate = $('#chat-entry');
+      var $chatEntry =
+        $($chatEntryTemplate
+          .html()
+          .replace('`userType`', entry.type))
+        .html(entry.text);
+
+      $chat.append($chatEntry);
+    });
+
+    $logs.show().animate({ top: 0, opacity: 1 });
+  });
+
+  $logCloseBtn.on('click', function(event) {
+    $logs.animate({ top: '-100%', opacity: 0 });
   });
 });
