@@ -109,8 +109,14 @@ ul {
 }
 
 #chat .admin {
-    background-color: rgba(255, 0, 0, 0.1);
+    background-color: rgba(0, 0, 255, 0.1);
     text-align: right;
+}
+
+#chat .system {
+    background-color: #000;
+    color: #fff;
+    text-align: center;
 }
 
 #admin-answer {

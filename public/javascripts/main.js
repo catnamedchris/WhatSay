@@ -7,11 +7,20 @@ $(function() {
   var $answer = $('#answer');
 
   var socket = io();
+  var socketId;
+  var logs = [];
 
   screen.orientation.lock('portrait');
 
+  socket.on('socketId', function(id) {
+    socketId = id;
+    console.log('socketId: ' + socketId);
+  });
+
   socket.on('answer', function(answer) {
     $answer.text(answer);
+    logs.push({ time: Date.now(), text: $textarea.val(), type: 'admin' });
+    localStorage.setItem('WhatSayLogs', JSON.stringify(logs));
 
     $waitMarker.fadeTo('slow', 0).hide();
     $answerContainer.show().fadeTo('slow', 1);
@@ -39,6 +48,7 @@ $(function() {
     var spinner = new Spinner(opts).spin();
 
     socket.emit('question', $textarea.val());
+    logs.push({ time: Date.now(), text: $textarea.val(), type: 'user' });
 
     $answerContainer.fadeTo('slow', 0).hide();
     $waitMarker.append(spinner.el);

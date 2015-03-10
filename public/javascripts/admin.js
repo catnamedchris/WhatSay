@@ -69,6 +69,13 @@ $(function() {
     renderLog(currentSocketId);
   });
 
+  socket.on('userDisconnected', function(id) {
+    console.log('userDisconnected: ' + id);
+    $('li[data-id="' + id + '"').css('background-color', 'rgba(255, 0, 0, 0.1)');
+    logs[id].push({ text: 'USER DISCONNECTED', type: 'system' });
+    renderLog(id);
+  });
+
   $socketIdMenu.on('click', 'li', function(event) {
     currentSocketId = $(event.currentTarget).attr('data-id');
     renderLog(currentSocketId);
