@@ -25,9 +25,9 @@ $(function() {
     console.log('socketId: ' + socketId);
   });
 
-  socket.on('answer', function(answer) {
-    $answer.text(answer);
-    logs.push({ time: Date.now(), text: $textarea.val(), type: 'admin' });
+  socket.on('answer', function(data) {
+    $answer.text(data.answer);
+    logs.push({ time: data.time, text: data.answer, type: 'admin' });
     localStorage.setItem('WhatSayLogs', JSON.stringify(logs));
 
     $waitMarker.fadeTo('slow', 0).hide();
@@ -55,8 +55,9 @@ $(function() {
     };
     var spinner = new Spinner(opts).spin();
 
-    socket.emit('question', $textarea.val());
-    logs.push({ time: Date.now(), text: $textarea.val(), type: 'user' });
+    var time = Date.now();
+    socket.emit('question', { question: $textarea.val(), time: time });
+    logs.push({ time: time, text: $textarea.val(), type: 'user' });
 
     $answerContainer.fadeTo('slow', 0).hide();
     $waitMarker.append(spinner.el);

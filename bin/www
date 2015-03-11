@@ -41,17 +41,21 @@ io.on('connection', function(socket) {
     adminSocketId = id;
   });
 
-  socket.on('question', function(question) {
-    console.log('question: ' + question);
+  socket.on('question', function(data) {
+    console.log('question: ' + data.question);
 
     socket.broadcast.to(adminSocketId).emit('question', {
       socketId: socket.id,
-      question: question
+      question: data.question,
+      time: data.time
     });
   });
 
   socket.on('adminAnswer', function(userSocketId, answer) {
-    socket.broadcast.to(userSocketId).emit('answer', answer);
+    socket.broadcast.to(userSocketId).emit('answer', {
+      time: Date.now(),
+      answer: answer
+    });
   });
 
   socket.on('disconnect', function() {
