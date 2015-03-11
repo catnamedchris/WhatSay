@@ -8,6 +8,42 @@ $(function() {
   var $textarea = $('#admin-answer');
   var $answerBtn = $('#log button');
 
+  var logs = {};
+
+  var storedLogs = localStorage.getItem('WhatSayAdminLogs');
+  if (storedLogs) {
+    logs = JSON.parse(storedLogs);
+    currentSocketId = Object.keys(logs)[0];
+  }
+
+  if (currentSocketId) {
+    Object.keys(logs).forEach(function(id) {
+      var $userMenuItemTemplate = $('#user-menu-item');
+      var $userMenuItem;
+
+      $userMenuItem =
+        $($userMenuItemTemplate
+          .html()
+          .replace(/`socketId`/g, id));
+
+      if (id === currentSocketId) {
+        $userMenuItem.addClass('active');
+      }
+
+      var match = 0;
+      for (var i = 0; i < logs[id].length; i++) {
+        if (logs[id][i].type === 'user') match++;
+        else if (logs[id][i].type === 'admin') match--;
+      }
+      if (match !== 0) {
+        $userMenuItem.addClass('has-new-data');
+      }
+
+      $('#users').append($userMenuItem);
+    });
+    renderLog(currentSocketId);
+  }
+
   function renderLog(socketId) {
     var $chat = $('#chat');
     $chat.html('');
@@ -66,6 +102,7 @@ $(function() {
       logs[currentSocketId] = [{ text: questionData.question, type: 'user' }];
     }
 
+    localStorage.setItem('WhatSayAdminLogs', JSON.stringify(logs));
     renderLog(currentSocketId);
   });
 
@@ -74,6 +111,7 @@ $(function() {
     if (id in logs) {
       $('li[data-id="' + id + '"').css('background-color', 'rgba(255, 0, 0, 0.1)');
       logs[id].push({ text: 'USER DISCONNECTED', type: 'system' });
+      localStorage.setItem('WhatSayAdminLogs', JSON.stringify(logs));
       renderLog(id);
     }
   });
@@ -86,6 +124,7 @@ $(function() {
   $answerBtn.on('click', function(event) {
     if (currentSocketId) {
       logs[currentSocketId].push({ text: $textarea.val(), type: 'admin' });
+      localStorage.setItem('WhatSayAdminLogs', JSON.stringify(logs));
       $('li[data-id="' + currentSocketId + '"').removeClass('has-new-data');
       renderLog(currentSocketId);
       socket.emit('adminAnswer', currentSocketId, $textarea.val());
