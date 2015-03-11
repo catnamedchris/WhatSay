@@ -31,12 +31,18 @@ $(function() {
       }
 
       var match = 0;
+      var isDisconnected = false;
       for (var i = 0; i < logs[id].length; i++) {
         if (logs[id][i].type === 'user') match++;
         else if (logs[id][i].type === 'admin') match--;
+
+        if (logs[id][i].type === 'system') isDisconnected = true;
       }
       if (match !== 0) {
         $userMenuItem.addClass('has-new-data');
+      }
+      if (isDisconnected) {
+        $userMenuItem.css('background-color', 'rgba(255, 0, 0, 0.1)');
       }
 
       $('#users').append($userMenuItem);
