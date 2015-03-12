@@ -52,10 +52,14 @@ $(function() {
       $answerArea: $('#answer-area'),
       $answerContainer: $('#answer-container'),
       $answer: $('#answer'),
-      $historyBtn: $('#btn-logs'),
+      $historyBtn: $('.sb-menu li:first-child a'),
+      $clearHistoryBtn: $('.sb-menu li:last-child a'),
       $logs: $('#logs'),
       $logCloseBtn: $('#logs .btn'),
-      $chat: $('#chat')
+      $chat: $('#chat'),
+      $menuBtn: $('.navbar .navbar-toggle'),
+      $navbar: $('.navbar'),
+      $menuItems: $('.sb-menu a')
     },
 
     init: function() {
@@ -120,13 +124,33 @@ $(function() {
             els.$chat.append($chatEntry);
           });
 
+          els.$navbar.hide();
           els.$logs.show().animate({ top: 0, opacity: 1 });
+        });
+
+        els.$clearHistoryBtn.on('click', function(event) {
+          that.fbase.ref.unauth();
+          els.$textarea.val('');
+          els.$waitMarker.fadeTo('slow', 0).hide();
+          els.$answerContainer.fadeTo('slow', 0).hide();
+          that.updateTranscript({ val: function() { return null; } });
         });
 
         els.$logCloseBtn.on('click', function(event) {
           els.$logs.animate({ top: '-100%', opacity: 0 });
+          els.$navbar.show();
         });
       });
+
+      $.slidebars();
+
+      els.$menuBtn.on('click', function(event) {
+        $.slidebars.toggle('left');
+      });
+
+      //els.$menuItems.on('click', function(event) {
+        //event.preventDefault();
+      //});
     },
 
     currentQuestionId: null,
@@ -153,6 +177,9 @@ $(function() {
         els.$answer.text(transcript[currentQuestionId].answer);
         els.$waitMarker.fadeTo('slow', 0).hide();
         els.$answerContainer.show().fadeTo('slow', 1);
+      } else {
+        //els.$textarea.val('');
+        //els.$answer.text('');
       }
     }
   };

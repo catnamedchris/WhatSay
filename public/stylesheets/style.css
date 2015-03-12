@@ -1,4 +1,4 @@
-html, body, #main {
+html, body, #main, #sb-site {
     height: 100%;
 }
 
@@ -54,7 +54,7 @@ ul {
 
 #question-area {
     background-color: #fff;
-    padding-top: 2em;
+    padding-top: 65px;
 }
 
 #answer-area {
@@ -186,6 +186,25 @@ ul {
     width: 100%;
 }
 
+.sb-menu {
+    padding-left: 0;
+}
+
+.sb-menu li {
+    padding: 1em 3em;
+    width: 100%;
+}
+
+.sb-menu li:hover,
+.sb-menu li:active {
+    background-color: #000;
+}
+
+.sb-menu a {
+    color: #fff;
+    text-decoration: none;
+    text-align: center;
+}
 
 @media (max-height: 250px) {
     #question-area {
