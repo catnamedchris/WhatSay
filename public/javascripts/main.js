@@ -1,141 +1,161 @@
 $(function() {
-  var $textarea = $('#question');
-  var $submitBtn = $('#btn-submit');
-  var $waitMarker = $('#wait-marker');
-  var $answerArea = $('#answer-area');
-  var $answerContainer = $('#answer-container');
-  var $answer = $('#answer');
-  var $historyBtn = $('#btn-logs');
-  var $logs = $('#logs');
-  var $logCloseBtn = $('#logs .btn');
+  var debug = {
+    isActive: true,
 
-  var socket = io();
-  var socketId;
-  var logs = [];
-
-  screen.orientation.lock('portrait');
-  
-  var ref = new Firebase("https://scorching-fire-8079.firebaseio.com");
-  var authData = ref.getAuth();
-  if (authData) {
-    $('#shitty-login').hide();
-    $('#main').show();
-    console.log("User " + authData.uid + " is logged in with " + authData.provider);
-  } else {
-    console.log("User is logged out");
-    $('#shitty-login').show();
-    $('#main').hide();
-  }
-
-  var $inputEmail = $('#inputEmail');
-  var $inputPassword = $('#inputPassword');
-  $('#button-login').on('click', function() {
-
-    function authHandler(error, authData) {
-      if (error) {
-        console.log("Login Failed!", error);
-        $('#shitty-login').show();
-        $('#main').hide();  
-
-      } else {
-        $('#shitty-login').hide();
-        $('#main').show();  
-        console.log("Authenticated successfully with payload:", authData);
+    log: function() {
+      if (this.isActive) {
+        console.log.apply(
+          console,
+          Array.prototype.slice.call(arguments, 0));
       }
     }
+  };
 
-    ref.authWithPassword({
-      email: $inputEmail.val(),
-      password: $inputPassword.val()
-    }, authHandler);
-  });
+  var app = {
+    fbase: {
+      _URL: 'https://scorching-fire-8079.firebaseio.com',
 
-  var storedLogs = localStorage.getItem('WhatSayLogs');
-  if (storedLogs) {
-    logs = JSON.parse(storedLogs);
-  }
+      ref: null,
 
-  socket.on('socketId', function(id) {
-    socketId = id;
-    console.log('socketId: ' + socketId);
-  });
-
-  socket.on('answer', function(answer) {
-    $answer.text(answer);
-    logs.push({ time: Date.now(), text: $textarea.val(), type: 'admin' });
-    localStorage.setItem('WhatSayLogs', JSON.stringify(logs));
-
-    $waitMarker.fadeTo('slow', 0).hide();
-    $answerContainer.show().fadeTo('slow', 1);
-  });
-
-  $submitBtn.on('click', function(event) {
-    var opts = {
-      lines: 12, // The number of lines to draw
-      length: 15, // The length of each line
-      width: 8, // The line thickness
-      radius: 20, // The radius of the inner circle
-      corners: 1, // Corner roundness (0..1)
-      rotate: 0, // The rotation offset
-      direction: 1, // 1: clockwise, -1: counterclockwise
-      color: '#fff', // #rgb or #rrggbb or array of colors
-      speed: 1, // Rounds per second
-      trail: 60, // Afterglow percentage
-      shadow: false, // Whether to render a shadow
-      hwaccel: false, // Whether to use hardware acceleration
-      className: 'spinner', // The CSS class to assign to the spinner
-      zIndex: 2e9, // The z-index (defaults to 2000000000)
-      top: '50%', // Top position relative to parent
-      left: '50%' // Left position relative to parent
-    };
-    var spinner = new Spinner(opts).spin();
-
-    socket.emit('question', $textarea.val());
-    $.ajax({
-      url: '/convo',
-      type: 'POST',
-      dataType: 'json',
-      data: { incomingMessage:  $textarea.val(),
-        sIo: socketId
+      init: function() {
+        this.ref = new Firebase(this._URL);
+        return this;
       },
-    })
 
-    .done(function() {
-      console.log("success");
-    })
-    .fail(function() {
-      console.log("error");
-    })
-    .always(function() {
-      console.log("complete");
-    });
-    
-    logs.push({ time: Date.now(), text: $textarea.val(), type: 'user' });
+      authData: null,
 
-    $answerContainer.fadeTo('slow', 0).hide();
-    $waitMarker.append(spinner.el);
-    $waitMarker.show().fadeTo('slow', 1);
-  });
+      auth: function(callback) {
+        var that = this;
+        var authData = that.ref.getAuth();
 
-  $historyBtn.on('click', function(event) {
-    var $chat = $('#chat');
-    $chat.html('');
+        if (authData) {
+          that.authData = authData;
+          callback(authData);
+        } else {
+          that.ref.authAnonymously(function(error, authData) {
+            if (error) {
+              debug.log('Login Failed!', error);
+            } else {
+              debug.log('Authenticated successfully with payload:', authData);
+              that.authData = authData;
+              callback(authData);
+            }
+          });
+        }
+      }
+    },
 
-    logs.forEach(function(entry) {
-      var $chatEntryTemplate = $('#chat-entry');
-      var $chatEntry =
-        $($chatEntryTemplate
-          .html()
-          .replace('`userType`', entry.type))
-        .html(entry.text);
+    els: {
+      $textarea: $('#question'),
+      $submitBtn: $('#btn-submit'),
+      $waitMarker: $('#wait-marker'),
+      $answerArea: $('#answer-area'),
+      $answerContainer: $('#answer-container'),
+      $answer: $('#answer'),
+      $historyBtn: $('#btn-logs'),
+      $logs: $('#logs'),
+      $logCloseBtn: $('#logs .btn'),
+      $chat: $('#chat')
+    },
 
-      $chat.append($chatEntry);
-    });
+    init: function() {
+      var that = this;
+      var els = that.els;
 
-    $logs.show().animate({ top: 0, opacity: 1 });
-  });
+      screen.orientation.lock('portrait');
 
-  $logCloseBtn.on('click', function(event) {
-    $logs.animate({ top: '-100%', opacity: 0 });
-  });
+      that.fbase.init().auth(function(authData) {
+        that.fbase.ref.on('value', that.updateTranscript.bind(that));
+
+        els.$submitBtn.on('click', function(event) {
+          var opts = {
+            lines: 12, // The number of lines to draw
+            length: 15, // The length of each line
+            width: 8, // The line thickness
+            radius: 20, // The radius of the inner circle
+            corners: 1, // Corner roundness (0..1)
+            rotate: 0, // The rotation offset
+            direction: 1, // 1: clockwise, -1: counterclockwise
+            color: '#fff', // #rgb or #rrggbb or array of colors
+            speed: 1, // Rounds per second
+            trail: 60, // Afterglow percentage
+            shadow: false, // Whether to render a shadow
+            hwaccel: false, // Whether to use hardware acceleration
+            className: 'spinner', // The CSS class to assign to the spinner
+            zIndex: 2e9, // The z-index (defaults to 2000000000)
+            top: '50%', // Top position relative to parent
+            left: '50%' // Left position relative to parent
+          };
+          var spinner = new Spinner(opts).spin();
+
+          that.currentQuestionId =
+            that.fbase.ref.child(authData.uid)
+              .push({
+                question: els.$textarea.val(),
+                questionCreatedAt: Firebase.ServerValue.TIMESTAMP
+              })
+              .key();
+
+          els.$answerContainer.fadeTo('slow', 0).hide();
+          els.$waitMarker
+            .append(spinner.el)
+            .show()
+            .fadeTo('slow', 1);
+        });
+
+        els.$historyBtn.on('click', function(event) {
+          if (!that.transcript) return;
+
+          els.$chat.html('');
+
+          Object.keys(that.transcript).forEach(function(key) {
+            var entry = that.transcript[key];
+            var $chatEntryTemplate = $('#chat-entry');
+            var $chatEntry =
+              $($chatEntryTemplate
+                .html()
+                .replace('`question`', entry.question)
+                .replace('`answer`', entry.answer ? entry.answer : '<br/>'));
+
+            els.$chat.append($chatEntry);
+          });
+
+          els.$logs.show().animate({ top: 0, opacity: 1 });
+        });
+
+        els.$logCloseBtn.on('click', function(event) {
+          els.$logs.animate({ top: '-100%', opacity: 0 });
+        });
+      });
+    },
+
+    currentQuestionId: null,
+
+    transcript: null,
+
+    updateTranscript: function(snapshot) {
+      debug.log('transcript updated:', snapshot.val());
+
+      var val = snapshot.val();
+      this.transcript = val ? val[this.fbase.authData.uid] : null;
+      this.render();
+    },
+
+    render: function() {
+      var els = this.els;
+      var currentQuestionId = this.currentQuestionId;
+      var transcript = this.transcript;
+
+      if (transcript
+        && (currentQuestionId in transcript)
+        && transcript[currentQuestionId].answer) {
+
+        els.$answer.text(transcript[currentQuestionId].answer);
+        els.$waitMarker.fadeTo('slow', 0).hide();
+        els.$answerContainer.show().fadeTo('slow', 1);
+      }
+    }
+  };
+
+  app.init();
 });

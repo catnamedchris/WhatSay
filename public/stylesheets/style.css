@@ -6,13 +6,8 @@ ul {
     margin: 0;
 }
 
-#shitty-login {
-    display: none;
-}
-
 #main {
     background-color: #000;
-    display: none;
     position: relative;
 }
 
@@ -149,6 +144,10 @@ ul {
     width: 100%;
 }
 
+#log #chat {
+    height: 100%;
+}
+
 #chat .user {
     text-align: left;
 }
@@ -162,6 +161,14 @@ ul {
     background-color: #000;
     color: #fff;
     text-align: center;
+}
+
+#chat li {
+    border-top: 1px solid rgba(204, 204, 204, 1);
+}
+
+#chat li:first-child {
+    border-top: none;
 }
 
 #admin-answer {

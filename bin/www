@@ -20,7 +20,6 @@ app.set('port', port);
  */
 
 var server = http.createServer(app);
-var io = require('socket.io')(server);
 
 /**
  * Listen on provided port, on all network interfaces.
@@ -29,37 +28,6 @@ var io = require('socket.io')(server);
 server.listen(port);
 server.on('error', onError);
 server.on('listening', onListening);
-
-var adminSocketId = null;
-io.on('connection', function(socket) {
-  console.log('a user connected w/ socket id: ' + socket.id);
-
-  socket.emit('socketId', socket.id);
-
-  socket.on('adminConnected', function(id) {
-    console.log('admin connected w/ socket id: ' + socket.id);
-    adminSocketId = id;
-  });
-
-  socket.on('question', function(question) {
-    console.log('question: ' + question);
-
-    socket.broadcast.to(adminSocketId).emit('question', {
-      socketId: socket.id,
-      question: question
-    });
-  });
-
-  socket.on('adminAnswer', function(userSocketId, answer) {
-    socket.broadcast.to(userSocketId).emit('answer', answer);
-  });
-
-  socket.on('disconnect', function() {
-    console.log('a user disconnected');
-
-    socket.broadcast.to(adminSocketId).emit('userDisconnected', socket.id);
-  });
-});
 
 /**
  * Normalize a port into a number, string, or false.

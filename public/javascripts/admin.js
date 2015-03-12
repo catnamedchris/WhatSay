@@ -1,93 +1,139 @@
 $(function() {
-  var socket = io();
-  var adminSocketId = null;
-  var logs = {};
-  var currentSocketId = null;
+  var debug = {
+    isActive: true,
 
-  var $socketIdMenu = $('#users');
-  var $textarea = $('#admin-answer');
-  var $answerBtn = $('#log button');
-
-  function renderLog(socketId) {
-    var $chat = $('#chat');
-    $chat.html('');
-
-    $('li[data-id="' + socketId + '"]')
-      .addClass('active')
-      .siblings()
-      .removeClass('active');
-
-    logs[socketId].forEach(function(entry) {
-      var $chatEntryTemplate = $('#chat-entry');
-      var $chatEntry =
-        $($chatEntryTemplate
-          .html()
-          .replace('`userType`', entry.type))
-        .html(entry.text);
-
-      $chat.append($chatEntry);
-    });
-  }
-
-  socket.on('socketId', function(id) {
-    adminSocketId = id;
-
-    socket.emit('adminConnected', adminSocketId);
-  });
-
-  socket.on('question', function(questionData) {
-    currentSocketId = questionData.socketId;
-
-    var $userMenuItemTemplate = $('#user-menu-item');
-    var $userMenuItem;
-
-    if (currentSocketId in logs) {
-      $('li[data-id="' + currentSocketId + '"]')
-        .addClass('has-new-data')
-        .addClass('active')
-        .siblings()
-        .removeClass('active');
-
-      logs[currentSocketId].push({ text: questionData.question, type: 'user' });
-    } else {
-      $userMenuItem =
-        $($userMenuItemTemplate
-          .html()
-          .replace(/`socketId`/g, currentSocketId));
-
-      $('#users').append($userMenuItem);
-
-      $userMenuItem
-        .addClass('has-new-data')
-        .addClass('active')
-        .siblings()
-        .removeClass('active');
-
-      logs[currentSocketId] = [{ text: questionData.question, type: 'user' }];
+    log: function() {
+      if (this.isActive) {
+        console.log.apply(
+          console,
+          Array.prototype.slice.call(arguments, 0));
+      }
     }
+  };
 
-    renderLog(currentSocketId);
-  });
+  var app = {
+    fbase: {
+      _URL: 'https://scorching-fire-8079.firebaseio.com',
 
-  socket.on('userDisconnected', function(id) {
-    console.log('userDisconnected: ' + id);
-    $('li[data-id="' + id + '"').css('background-color', 'rgba(255, 0, 0, 0.1)');
-    logs[id].push({ text: 'USER DISCONNECTED', type: 'system' });
-    renderLog(id);
-  });
+      ref: null,
 
-  $socketIdMenu.on('click', 'li', function(event) {
-    currentSocketId = $(event.currentTarget).attr('data-id');
-    renderLog(currentSocketId);
-  });
+      init: function() {
+        this.ref = new Firebase(this._URL);
+        return this;
+      },
 
-  $answerBtn.on('click', function(event) {
-    if (currentSocketId) {
-      logs[currentSocketId].push({ text: $textarea.val(), type: 'admin' });
-      $('li[data-id="' + currentSocketId + '"').removeClass('has-new-data');
-      renderLog(currentSocketId);
-      socket.emit('adminAnswer', currentSocketId, $textarea.val());
-      $textarea.val('');
+      authData: null,
+
+      auth: function(callback) {
+        var that = this;
+        var authData = that.ref.getAuth();
+
+        if (authData) {
+          that.authData = authData;
+          callback(authData);
+        } else {
+          that.ref.authAnonymously(function(error, authData) {
+            if (error) {
+              debug.log('Login Failed!', error);
+            } else {
+              debug.log('Authenticated successfully with payload:', authData);
+              that.authData = authData;
+              callback(authData);
+            }
+          });
+        }
+      }
+    },
+
+    els: {
+      $uidMenu: $('#users'),
+      $chat: $('#chat')
+    },
+
+    init: function() {
+      var that = this;
+      var els = that.els;
+
+      that.fbase.init().auth(function(authData) {
+        that.fbase.ref.on('value', that.updateTranscript.bind(that));
+
+        $('#users').on('click', 'li', function(event) {
+          that.currentUid = $(event.currentTarget).attr('data-id');
+          that.render();
+        });
+      });
+    },
+
+    currentUid: null,
+
+    transcript: null,
+
+    updateTranscript: function(snapshot) {
+      debug.log('transcript updated:', snapshot.val());
+
+      var val = snapshot.val();
+      this.transcript = val;
+      if (!this.currentUid) {
+        this.currentUid = this.transcript ? Object.keys(this.transcript)[0] : null;
+      }
+      this.render();
+    },
+
+    render: function() {
+      var that = this;
+      var els = that.els;
+
+      if (!that.transcript) return;
+
+      els.$uidMenu.html('');
+
+      Object.keys(that.transcript).forEach(function(key) {
+        var $uidMenuItemTemplate = $('#user-menu-item');
+        var $uidMenuItem;
+
+        $uidMenuItem =
+          $($uidMenuItemTemplate
+            .html()
+            .replace(/`uid`/g, key));
+
+        if (key === that.currentUid) {
+          $uidMenuItem.addClass('active');
+        }
+
+        for (var qid in that.transcript[key]) {
+          if (!that.transcript[key][qid].answer) {
+            $uidMenuItem.addClass('has-new-data');
+            break;
+          }
+        }
+
+        els.$uidMenu.append($uidMenuItem);
+      });
+
+      els.$chat.html('');
+
+      Object.keys(that.transcript[that.currentUid]).forEach(function(questionId) {
+        var entry = that.transcript[that.currentUid][questionId];
+        var $chatEntryTemplate = $('#chat-entry');
+        var $chatEntry =
+          $($chatEntryTemplate
+            .html()
+            .replace('`question`', entry.question)
+            .replace('`answer`', entry.answer ? entry.answer : '<br/>'));
+
+        $chatEntry.find('button').on('click', function(event) {
+          var answer = $chatEntry.find('textarea').val();
+          var ref = new Firebase('https://scorching-fire-8079.firebaseio.com/' + that.currentUid)
+          ref.child(questionId).update({
+            answer: answer,
+            answerCreatedAt: Firebase.ServerValue.TIMESTAMP
+          });
+        });
+
+        els.$chat.append($chatEntry);
+      });
     }
-  })
+  };
+
+  app.init();
 });
