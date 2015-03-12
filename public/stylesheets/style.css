@@ -206,6 +206,12 @@ ul {
     text-align: center;
 }
 
+.container.my-container {
+    width: 100%;
+    padding-left: 15px;
+    padding-right: 15px;
+}
+
 @media (max-height: 250px) {
     #question-area {
         height: 100%;
@@ -213,5 +219,11 @@ ul {
 
     #answer-area {
         display: none;
+    }
+}
+
+@media (min-width: 768px) {
+    .navbar-toggle {
+      display: block;
     }
 }
