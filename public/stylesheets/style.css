@@ -148,6 +148,10 @@ ul {
     height: 100%;
 }
 
+#log #chat button {
+    margin-bottom: 2em;
+}
+
 #chat .user {
     text-align: left;
 }
