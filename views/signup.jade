@@ -1,0 +1,14 @@
+extends layout
+
+block content
+	div.container
+		form.form-signin(action='/users', method='post')
+			h2.form-signin-heading= 'SIGN UP'
+			label.sr-only(for='email')= 'Email address'
+			input#inputEmail.form-control(placeholder='Email address', required, autofocus, name ='email')
+			label.sr-only(for='password')= 'Password'
+			input#inputPassword.form-control(type='password', placeholder='Password', name='password')
+			div.checkbox
+				label
+					input(type='checkbox', value='remember-me')= 'Remember me'
+			button.btn.btn-lg.btn-primary.btn-block(type='submit')= 'Sign Up'

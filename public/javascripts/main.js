@@ -56,6 +56,25 @@ $(function() {
     var spinner = new Spinner(opts).spin();
 
     socket.emit('question', $textarea.val());
+    $.ajax({
+      url: '/convo',
+      type: 'POST',
+      dataType: 'json',
+      data: { incomingMessage:  $textarea.val(),
+        sIo: socketId
+      },
+    })
+
+    .done(function() {
+      console.log("success");
+    })
+    .fail(function() {
+      console.log("error");
+    })
+    .always(function() {
+      console.log("complete");
+    });
+    
     logs.push({ time: Date.now(), text: $textarea.val(), type: 'user' });
 
     $answerContainer.fadeTo('slow', 0).hide();
