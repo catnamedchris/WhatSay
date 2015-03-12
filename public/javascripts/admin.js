@@ -121,6 +121,8 @@ $(function() {
             .replace('`question`', entry.question)
             .replace('`answer`', entry.answer ? entry.answer : '<br/>'));
 
+        if (!entry.answer) $chatEntry.css('background-color', 'rgba(255, 0, 0, 0.1');
+
         $chatEntry.find('button').on('click', function(event) {
           var answer = $chatEntry.find('textarea').val();
           var ref = new Firebase('https://scorching-fire-8079.firebaseio.com/' + that.currentUid)
