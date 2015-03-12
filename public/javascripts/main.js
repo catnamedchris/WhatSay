@@ -69,7 +69,7 @@ $(function() {
       screen.orientation.lock('portrait');
 
       that.fbase.init().auth(function(authData) {
-        that.fbase.ref.on('value', that.updateTranscript.bind(that));
+        that.fbase.ref.child(that.fbase.authData.uid).on('value', that.updateTranscript.bind(that));
 
         els.$submitBtn.on('click', function(event) {
           var opts = {
@@ -161,7 +161,7 @@ $(function() {
       debug.log('transcript updated:', snapshot.val());
 
       var val = snapshot.val();
-      this.transcript = val ? val[this.fbase.authData.uid] : null;
+      this.transcript = val;
       this.render();
     },
 
@@ -177,9 +177,6 @@ $(function() {
         els.$answer.text(transcript[currentQuestionId].answer);
         els.$waitMarker.fadeTo('slow', 0).hide();
         els.$answerContainer.show().fadeTo('slow', 1);
-      } else {
-        //els.$textarea.val('');
-        //els.$answer.text('');
       }
     }
   };
