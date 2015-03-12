@@ -32,7 +32,11 @@ $(function() {
           that.authData = authData;
           callback(authData);
         } else {
-          that.ref.authAnonymously(function(error, authData) {
+          that.ref.authWithPassword({
+            email: 'quanct@gmail.com',
+            password: $('#admin-sign-in input').val()
+          }, function(error, authData) {
+            $('#admin-sign-in input').val('');
             if (error) {
               debug.log('Login Failed!', error);
             } else {
@@ -54,13 +58,19 @@ $(function() {
       var that = this;
       var els = that.els;
 
-      that.fbase.init().auth(function(authData) {
-        that.fbase.ref.on('value', that.updateTranscript.bind(that));
+      that.fbase.init();
+      $('#admin-sign-in-btn').on('click', function(event) {
+        that.fbase.auth(function(authData) {
+          that.fbase.ref.on('value', that.updateTranscript.bind(that));
 
-        $('#users').on('click', 'li', function(event) {
-          that.currentUid = $(event.currentTarget).attr('data-id');
-          that.render();
+          $('#users').on('click', 'li', function(event) {
+            that.currentUid = $(event.currentTarget).attr('data-id');
+            that.render();
+          });
         });
+      });
+      $('#admin-sign-out-btn').on('click', function(event) {
+        if (that.fbase.ref) that.fbase.ref.unauth();
       });
     },
 
