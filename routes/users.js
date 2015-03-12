@@ -20,8 +20,10 @@ router.post('/', function(req, res, next) {
   	password : req.body.password 
 	}, function(error, userData) {
   	if (error) {
+  		res.send('Sorry there was an error: ' + JSON.stringify(error));
     	console.log("Error creating user:", error);
   	} else {
+  		res.send('Successfully created user ' + req.body.email);
   	  console.log("Successfully created user account with uid:", userData.uid);
   	}
 	});
