@@ -6,8 +6,13 @@ ul {
     margin: 0;
 }
 
+#shitty-login {
+    display: none;
+}
+
 #main {
     background-color: #000;
+    display: none;
     position: relative;
 }
 

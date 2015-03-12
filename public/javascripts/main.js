@@ -14,6 +14,41 @@ $(function() {
   var logs = [];
 
   screen.orientation.lock('portrait');
+  
+  var ref = new Firebase("https://scorching-fire-8079.firebaseio.com");
+  var authData = ref.getAuth();
+  if (authData) {
+    $('#shitty-login').hide();
+    $('#main').show();
+    console.log("User " + authData.uid + " is logged in with " + authData.provider);
+  } else {
+    console.log("User is logged out");
+    $('#shitty-login').show();
+    $('#main').hide();
+  }
+
+  var $inputEmail = $('#inputEmail');
+  var $inputPassword = $('#inputPassword');
+  $('#button-login').on('click', function() {
+
+    function authHandler(error, authData) {
+      if (error) {
+        console.log("Login Failed!", error);
+        $('#shitty-login').show();
+        $('#main').hide();  
+
+      } else {
+        $('#shitty-login').hide();
+        $('#main').show();  
+        console.log("Authenticated successfully with payload:", authData);
+      }
+    }
+
+    ref.authWithPassword({
+      email: $inputEmail.val(),
+      password: $inputPassword.val()
+    }, authHandler);
+  });
 
   var storedLogs = localStorage.getItem('WhatSayLogs');
   if (storedLogs) {
