@@ -66,11 +66,14 @@ $(function() {
       var that = this;
       var els = that.els;
 
-      screen.orientation.lock('portrait');
+      if (screen.orientation && screen.orientation.lock) {
+        screen.orientation.lock('portrait');
+      }
 
       that.fbase.init().auth(function(authData) {
         that.fbase.ref.child(that.fbase.authData.uid).on('value', that.updateTranscript.bind(that));
 
+        els.$submitBtn.off('click');
         els.$submitBtn.on('click', function(event) {
           var opts = {
             lines: 12, // The number of lines to draw
@@ -107,6 +110,7 @@ $(function() {
             .fadeTo('slow', 1);
         });
 
+        els.$historyBtn.off('click');
         els.$historyBtn.on('click', function(event) {
           if (!that.transcript) return;
 
@@ -128,14 +132,16 @@ $(function() {
           els.$logs.show().animate({ top: 0, opacity: 1 });
         });
 
+        els.$clearHistoryBtn.off('click');
         els.$clearHistoryBtn.on('click', function(event) {
           that.fbase.ref.unauth();
           els.$textarea.val('');
           els.$waitMarker.fadeTo('slow', 0).hide();
           els.$answerContainer.fadeTo('slow', 0).hide();
-          that.updateTranscript({ val: function() { return null; } });
+          that.init();
         });
 
+        els.$logCloseBtn.off('click');
         els.$logCloseBtn.on('click', function(event) {
           els.$logs.animate({ top: '-100%', opacity: 0 });
           els.$navbar.show();
@@ -144,6 +150,7 @@ $(function() {
 
       $.slidebars();
 
+      els.$menuBtn.off('click');
       els.$menuBtn.on('click', function(event) {
         $.slidebars.toggle('left');
       });
